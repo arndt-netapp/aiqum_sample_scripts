@@ -56,7 +56,7 @@ def aiqum_snapmirrors(cnx):
 
     print("SourceVserver,SourceVolume,"
           "DestinationVserver,DestinationVolume,"
-          "MirrorState,MirrorType,LagTime"
+          "MirrorState,MirrorType,LagTime,"
           "LastUpdated")
     for row in cursor:
         if row[6]:
