@@ -46,6 +46,8 @@ def aiqum_volumes(cnx):
              "export_policy.name,vol.size,vol.sizeUsed,"
              "vol.securityStyle,vol.volType,vol.styleExtended,"
              "vol.snapshotCount,vol.snapshotReserveSize,vol.sizeUsedBySnapshots,"
+             "vol.securityUserID,vol.securityGroupID,vol.securityPermissions,"
+             "vol.inodeFilesTotal,vol.inodeFilesUsed,"
              "aggregate.name,aggregate.aggregateType,"
              "cluster.lastUpdateTime "
              "FROM volume AS vol "
@@ -61,6 +63,8 @@ def aiqum_volumes(cnx):
           "ExportPolicyName,VolSize(GB),VolUsed(GB),"
           "SecurityStyle,VolType,VolStyle,"
           "SnapshotCount,SnapshotReserveSize(GB),SnapshotUsed(GB),"
+          "UserID,GroupID,Permissions,"
+          "InodesTotal,InodesUsed,"
           "Aggregqate,AggregateType,"
           "LastUpdated")
     for row in cursor:
@@ -68,12 +72,14 @@ def aiqum_volumes(cnx):
         VolUsedGB = "%.1f" % (row[6]  / (1024*1024*1024))
         SsResGB   = "%.1f" % (row[11] / (1024*1024*1024))
         SsUsedGB  = "%.1f" % (row[12] / (1024*1024*1024))
-        epochtime = "%i" % (row[15] / 1000)
+        epochtime = "%i" % (row[20] / 1000)
         lastupdated = datetime.datetime.fromtimestamp(int(epochtime))
         print("%s,%s,%s,%s,"
               "%s,%s,%s,"
               "%s,%s,%s,"
               "%s,%s,%s,"
+              "%s,%s,%s,"
+              "%s,%s,"
               "%s,%s,"
               "%s"
               %
@@ -82,6 +88,8 @@ def aiqum_volumes(cnx):
                row[7],row[8],row[9],
                row[10],SsResGB,SsUsedGB,
                row[13],row[14],
+               row[15],row[16],row[17],
+               row[18],row[19],
                lastupdated
               )
              )
