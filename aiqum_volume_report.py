@@ -87,8 +87,8 @@ def aiqum_volumes(cnx):
                row[4],VolSizeGB,VolUsedGB,
                row[7],row[8],row[9],
                row[10],SsResGB,SsUsedGB,
-               row[13],row[14],
-               row[15],row[16],row[17],
+               row[13],row[14],row[15],
+               row[16],row[17],
                row[18],row[19],
                lastupdated
               )
