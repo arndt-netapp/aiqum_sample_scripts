@@ -61,6 +61,8 @@ def aiqum_user_quotas(cnx):
           "LastUpdated"
          )
     for row in cursor:
+        # Quota Target may be a comma separated list, convert to semicolon.
+        QuotaTarget = str(row[7]).replace(",", ";")
         DiskLimitGB = "%.1f" % (row[8] / (1024*1024))
         DiskUsedGB  = "%.1f" % (row[9] / (1024*1024))
         epochtime   = "%i" % (row[10] / 1000)
@@ -72,7 +74,7 @@ def aiqum_user_quotas(cnx):
               %
               (row[0],row[1],row[2],row[3],
                row[4],row[5],row[6],
-               row[7],DiskLimitGB,DiskUsedGB,
+               QuotaTarget,DiskLimitGB,DiskUsedGB,
                lastupdated
               )
              )
