@@ -68,6 +68,12 @@ def aiqum_volumes(cnx):
           "Aggregqate,AggregateType,"
           "LastUpdated")
     for row in cursor:
+        # Skip this row and log an error if we are missing values.
+        if (row[6] is None):
+            print("Missing value in row:", file=sys.stderr)
+            print(row, file=sys.stderr)
+            print("Continuing.", file=sys.stderr)
+            continue
         VolSizeGB = "%.1f" % (row[5]  / (1024*1024*1024))
         VolUsedGB = "%.1f" % (row[6]  / (1024*1024*1024))
         SsResGB   = "%.1f" % (row[11] / (1024*1024*1024))
