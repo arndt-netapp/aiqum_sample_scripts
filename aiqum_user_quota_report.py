@@ -44,7 +44,7 @@ def aiqum_user_quotas(cnx):
     cursor = cnx.cursor()
     query = ("SELECT cluster.name,vserver.name,volume.name,volume.junctionPath,"
              "qtree.name,quota_user.quotaUserID,quota_user.quotaUserName,"
-             "uq.quotaTarget,uq.diskLimit,uq.diskUsed,"
+             "uq.quotaTarget,uq.diskLimit,uq.diskUsed,uq.fileUsed,"
              "cluster.lastUpdateTime "
              "FROM user_quota AS uq "
              "INNER JOIN cluster ON uq.clusterId = cluster.objid "
@@ -57,7 +57,7 @@ def aiqum_user_quotas(cnx):
 
     print("Cluster,Vserver,Volume,JunctionPath,"
           "Qtree,UserID,UserName,"
-          "QuotaTarget,DiskLimit(GB),DiskUsed(GB),"
+          "QuotaTarget,DiskLimit(GB),DiskUsed(GB),Inodes,"
           "LastUpdated"
          )
     for row in cursor:
@@ -65,16 +65,16 @@ def aiqum_user_quotas(cnx):
         QuotaTarget = str(row[7]).replace(",", ";")
         DiskLimitGB = "%.1f" % (row[8] / (1024*1024))
         DiskUsedGB  = "%.1f" % (row[9] / (1024*1024))
-        epochtime   = "%i" % (row[10] / 1000)
+        epochtime   = "%i" % (row[11] / 1000)
         lastupdated = datetime.datetime.fromtimestamp(int(epochtime))
         print("%s,%s,%s,%s,"
               "%s,%s,%s,"
-              "%s,%s,%s,"
+              "%s,%s,%s,%s,"
               "%s"
               %
               (row[0],row[1],row[2],row[3],
                row[4],row[5],row[6],
-               QuotaTarget,DiskLimitGB,DiskUsedGB,
+               QuotaTarget,DiskLimitGB,DiskUsedGB,row[10],
                lastupdated
               )
              )
