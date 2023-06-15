@@ -42,7 +42,7 @@ def aiqum_db_connect(aiq_host,aiq_user,aiq_password):
 # Query AIQUM for aggr data and print in CSV format.
 def aiqum_aggregates(cnx):
     cursor = cnx.cursor()
-    query = ("SELECT cluster.name,node.name,"
+    query = ("SELECT cluster.name,node.name,node.model,"
              "aggr.name,aggr.sizeUsedPercent,aggr.sizeTotal,aggr.sizeUsed,"
              "cluster.lastUpdateTime "
              "FROM aggregate AS aggr "
@@ -51,20 +51,20 @@ def aiqum_aggregates(cnx):
             )
     cursor.execute(query)
 
-    print("Cluster,Node,"
+    print("Cluster,Node,Model,"
           "Aggregate,PercentUsed,Size(GB),UsedSize(GB),"
           "LastUpdated")
     for row in cursor:
-        SizeGB = "%.1f" % (row[4]  / (1024*1024*1024))
-        UsedGB = "%.1f" % (row[5]  / (1024*1024*1024))
-        epochtime = "%i" % (row[6] / 1000)
+        SizeGB = "%.1f" % (row[5]  / (1024*1024*1024))
+        UsedGB = "%.1f" % (row[6]  / (1024*1024*1024))
+        epochtime = "%i" % (row[7] / 1000)
         lastupdated = datetime.datetime.fromtimestamp(int(epochtime))
-        print("%s,%s,"
+        print("%s,%s,%s,"
               "%s,%s,%s,%s,"
               "%s"
               %
-              (row[0],row[1],
-               row[2],row[3],SizeGB,UsedGB,
+              (row[0],row[1],row[2],
+               row[3],row[4],SizeGB,UsedGB,
                lastupdated
               )
              )
