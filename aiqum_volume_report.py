@@ -43,7 +43,7 @@ def aiqum_db_connect(aiq_host,aiq_user,aiq_password):
 def aiqum_volumes(cnx):
     cursor = cnx.cursor()
     query = ("SELECT cluster.name,vserver.name,vol.name,vol.junctionPath,"
-             "export_policy.name,vol.size,vol.sizeUsed,"
+             "export_policy.name,vol.size,vol.sizeUsed,vol.cloudTierFootprintBytes,"
              "vol.securityStyle,vol.volType,vol.styleExtended,"
              "vol.snapshotCount,vol.snapshotReserveSize,vol.sizeUsedBySnapshots,"
              "vol.securityUserID,vol.securityGroupID,vol.securityPermissions,"
@@ -60,7 +60,7 @@ def aiqum_volumes(cnx):
     cursor.execute(query)
 
     print("Cluster,Vserver,Volume,JunctionPath,"
-          "ExportPolicyName,VolSize(GB),VolUsed(GB),"
+          "ExportPolicyName,VolSize(GB),VolUsed(GB),CloudTierUsed(GB),"
           "SecurityStyle,VolType,VolStyle,"
           "SnapshotCount,SnapshotReserveSize(GB),SnapshotUsed(GB),"
           "UserID,GroupID,Permissions,"
@@ -74,14 +74,18 @@ def aiqum_volumes(cnx):
             print(row, file=sys.stderr)
             print("Continuing.", file=sys.stderr)
             continue
-        VolSizeGB = "%.1f" % (row[5]  / (1024*1024*1024))
-        VolUsedGB = "%.1f" % (row[6]  / (1024*1024*1024))
-        SsResGB   = "%.1f" % (row[11] / (1024*1024*1024))
-        SsUsedGB  = "%.1f" % (row[12] / (1024*1024*1024))
-        epochtime = "%i" % (row[21] / 1000)
+        VolSizeGB   = "%.1f" % (row[5]  / (1024*1024*1024))
+        VolUsedGB   = "%.1f" % (row[6]  / (1024*1024*1024))
+        if row[7]:
+            CloudUsedGB = "%.1f" % (row[7]  / (1024*1024*1024))
+        else:
+            CloudUsedGB = 0
+        SsResGB     = "%.1f" % (row[12] / (1024*1024*1024))
+        SsUsedGB    = "%.1f" % (row[13] / (1024*1024*1024))
+        epochtime   = "%i" % (row[22] / 1000)
         lastupdated = datetime.datetime.fromtimestamp(int(epochtime))
         print("%s,%s,%s,%s,"
-              "%s,%s,%s,"
+              "%s,%s,%s,%s,"
               "%s,%s,%s,"
               "%s,%s,%s,"
               "%s,%s,%s,"
@@ -90,12 +94,12 @@ def aiqum_volumes(cnx):
               "%s"
               %
               (row[0],row[1],row[2],row[3],
-               row[4],VolSizeGB,VolUsedGB,
-               row[7],row[8],row[9],
-               row[10],SsResGB,SsUsedGB,
-               row[13],row[14],row[15],
-               row[16],row[17],row[18],
-               row[19],row[20],
+               row[4],VolSizeGB,VolUsedGB,CloudUsedGB,
+               row[8],row[9],row[10],
+               row[11],SsResGB,SsUsedGB,
+               row[14],row[15],row[16],
+               row[17],row[18],row[19],
+               row[20],row[21],
                lastupdated
               )
              )
