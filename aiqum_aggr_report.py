@@ -44,28 +44,34 @@ def aiqum_aggregates(cnx):
     cursor = cnx.cursor()
     query = ("SELECT cluster.name,node.name,node.model,"
              "aggr.name,aggr.sizeUsedPercent,aggr.sizeTotal,aggr.sizeUsed,"
-             "cluster.lastUpdateTime "
+             "aggr_obj_cm.usedSpace,cluster.lastUpdateTime "
              "FROM aggregate AS aggr "
              "INNER JOIN node ON aggr.nodeId = node.objid "
              "INNER JOIN cluster ON aggr.clusterId = cluster.objid "
+             "LEFT JOIN aggregate_objectstore_config_mapping AS aggr_obj_cm \
+              ON aggr.objid = aggr_obj_cm.aggregateid "
             )
     cursor.execute(query)
 
     print("Cluster,Node,Model,"
           "Aggregate,PercentUsed,Size(GB),UsedSize(GB),"
-          "LastUpdated")
+          "CloudTierUsed(GB),LastUpdated")
     for row in cursor:
-        SizeGB = "%.1f" % (row[5]  / (1024*1024*1024))
-        UsedGB = "%.1f" % (row[6]  / (1024*1024*1024))
-        epochtime = "%i" % (row[7] / 1000)
+        SizeGB      = "%.1f" % (row[5]  / (1024*1024*1024))
+        UsedGB      = "%.1f" % (row[6]  / (1024*1024*1024))
+        if (row[7]):
+            CloudUsedGB = "%.1f" % (row[7]  / (1024*1024*1024))
+        else:
+            CloudUsedGB = 0
+        epochtime   = "%i" % (row[8] / 1000)
         lastupdated = datetime.datetime.fromtimestamp(int(epochtime))
         print("%s,%s,%s,"
               "%s,%s,%s,%s,"
-              "%s"
+              "%s,%s"
               %
               (row[0],row[1],row[2],
                row[3],row[4],SizeGB,UsedGB,
-               lastupdated
+               CloudUsedGB,lastupdated
               )
              )
 
