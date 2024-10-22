@@ -45,7 +45,7 @@ def aiqum_volumes(cnx):
     query = ("SELECT cluster.name,vserver.name,vol.name,vol.junctionPath,"
              "export_policy.name,vol.size,vol.sizeUsed,vol.cloudTierFootprintBytes,"
              "vol.securityStyle,vol.volType,vol.styleExtended,"
-             "vol.snapshotCount,vol.snapshotReserveSize,vol.sizeUsedBySnapshots,"
+             "snapshot_policy.name,vol.snapshotCount,vol.snapshotReserveSize,vol.sizeUsedBySnapshots,"
              "vol.securityUserID,vol.securityGroupID,vol.securityPermissions,"
              "vol.inodeFilesTotal,vol.inodeFilesUsed,vol.quotaStatus,"
              "aggregate.name,aggregate.aggregateType,"
@@ -55,6 +55,7 @@ def aiqum_volumes(cnx):
              "INNER JOIN vserver ON vol.vserverId = vserver.objid "
              "LEFT JOIN aggregate ON vol.aggregateId = aggregate.objid "
              "INNER JOIN export_policy ON vol.exportPolicyId = export_policy.objid "
+             "INNER JOIN snapshot_policy ON vol.snapshotPolicyId = snapshot_policy.objid "
              "WHERE (vol.volType='RW' or vol.volType='DP')"
             )
     cursor.execute(query)
@@ -62,7 +63,7 @@ def aiqum_volumes(cnx):
     print("Cluster,Vserver,Volume,JunctionPath,"
           "ExportPolicyName,VolSize(GB),VolUsed(GB),CloudTierUsed(GB),"
           "SecurityStyle,VolType,VolStyle,"
-          "SnapshotCount,SnapshotReserveSize(GB),SnapshotUsed(GB),"
+          "SnapshotPolicy,SnapshotCount,SnapshotReserveSize(GB),SnapshotUsed(GB),"
           "UserID,GroupID,Permissions,"
           "InodesTotal,InodesUsed,QuotaStatus,"
           "Aggregqate,AggregateType,"
@@ -80,14 +81,14 @@ def aiqum_volumes(cnx):
             CloudUsedGB = "%.1f" % (row[7]  / (1024*1024*1024))
         else:
             CloudUsedGB = 0
-        SsResGB     = "%.1f" % (row[12] / (1024*1024*1024))
-        SsUsedGB    = "%.1f" % (row[13] / (1024*1024*1024))
-        epochtime   = "%i" % (row[22] / 1000)
+        SsResGB     = "%.1f" % (row[13] / (1024*1024*1024))
+        SsUsedGB    = "%.1f" % (row[14] / (1024*1024*1024))
+        epochtime   = "%i" % (row[23] / 1000)
         lastupdated = datetime.datetime.fromtimestamp(int(epochtime))
         print("%s,%s,%s,%s,"
               "%s,%s,%s,%s,"
               "%s,%s,%s,"
-              "%s,%s,%s,"
+              "%s,%s,%s,%s,"
               "%s,%s,%s,"
               "%s,%s,%s,"
               "%s,%s,"
@@ -96,10 +97,10 @@ def aiqum_volumes(cnx):
               (row[0],row[1],row[2],row[3],
                row[4],VolSizeGB,VolUsedGB,CloudUsedGB,
                row[8],row[9],row[10],
-               row[11],SsResGB,SsUsedGB,
-               row[14],row[15],row[16],
-               row[17],row[18],row[19],
-               row[20],row[21],
+               row[11],row[12],SsResGB,SsUsedGB,
+               row[15],row[16],row[17],
+               row[18],row[19],row[20],
+               row[21],row[22],
                lastupdated
               )
              )
