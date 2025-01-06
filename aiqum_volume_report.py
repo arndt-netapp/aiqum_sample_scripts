@@ -43,12 +43,14 @@ def aiqum_db_connect(aiq_host,aiq_user,aiq_password):
 def aiqum_volumes(cnx):
     cursor = cnx.cursor()
     query = ("SELECT cluster.name,vserver.name,vol.name,vol.junctionPath,"
-             "export_policy.name,vol.size,vol.sizeUsed,vol.cloudTierFootprintBytes,"
+             "export_policy.name,vol.size,vol.sizeTotal,vol.sizeUsed,vol.cloudTierFootprintBytes,"
              "vol.securityStyle,vol.volType,vol.styleExtended,"
              "snapshot_policy.name,vol.snapshotCount,vol.snapshotReserveSize,vol.sizeUsedBySnapshots,"
              "vol.securityUserID,vol.securityGroupID,vol.securityPermissions,"
              "vol.inodeFilesTotal,vol.inodeFilesUsed,vol.quotaStatus,"
              "aggregate.name,aggregate.aggregateType,"
+             "vol.tieringPolicy,vol.tieringMinimumCoolingDays,"
+             "vol.compressionSpaceSaved,vol.deduplicationSpaceSaved,"
              "cluster.lastUpdateTime "
              "FROM volume AS vol "
              "INNER JOIN cluster ON vol.clusterId = cluster.objid "
@@ -61,12 +63,14 @@ def aiqum_volumes(cnx):
     cursor.execute(query)
 
     print("Cluster,Vserver,Volume,JunctionPath,"
-          "ExportPolicyName,VolSize(GB),VolUsed(GB),CloudTierUsed(GB),"
+          "ExportPolicyName,VolSize(GB),VolDataSize(GB),VolUsed(GB),CloudTierUsed(GB),"
           "SecurityStyle,VolType,VolStyle,"
           "SnapshotPolicy,SnapshotCount,SnapshotReserveSize(GB),SnapshotUsed(GB),"
           "UserID,GroupID,Permissions,"
           "InodesTotal,InodesUsed,QuotaStatus,"
           "Aggregqate,AggregateType,"
+          "TieringPolicy,TieringMinCoolingDays,"
+          "CompressionSaved(GB),DeduplicationSaved(GB),"
           "LastUpdated")
     for row in cursor:
         # Skip this row and log an error if we are missing values.
@@ -75,32 +79,45 @@ def aiqum_volumes(cnx):
             print(row, file=sys.stderr)
             print("Continuing.", file=sys.stderr)
             continue
-        VolSizeGB   = "%.1f" % (row[5]  / (1024*1024*1024))
-        VolUsedGB   = "%.1f" % (row[6]  / (1024*1024*1024))
-        if row[7]:
-            CloudUsedGB = "%.1f" % (row[7]  / (1024*1024*1024))
+        VolSizeGB     = "%.1f" % (row[5]  / (1024*1024*1024))
+        VolDataSizeGB = "%.1f" % (row[6]  / (1024*1024*1024))
+        VolUsedGB     = "%.1f" % (row[7]  / (1024*1024*1024))
+        if row[8]:
+            CloudUsedGB = "%.1f" % (row[8]  / (1024*1024*1024))
         else:
             CloudUsedGB = 0
-        SsResGB     = "%.1f" % (row[13] / (1024*1024*1024))
-        SsUsedGB    = "%.1f" % (row[14] / (1024*1024*1024))
-        epochtime   = "%i" % (row[23] / 1000)
+        SsResGB     = "%.1f" % (row[14] / (1024*1024*1024))
+        SsUsedGB    = "%.1f" % (row[15] / (1024*1024*1024))
+        if row[26]:
+            CompGB = "%.1f" % (row[26] / (1024*1024*1024))
+        else:
+            CompGB = 0
+        if row[27]:
+            DedupGB = "%.1f" % (row[27] / (1024*1024*1024))
+        else:
+            DedupGB = 0
+        epochtime   = "%i" % (row[28] / 1000)
         lastupdated = datetime.datetime.fromtimestamp(int(epochtime))
-        print("%s,%s,%s,%s,"
+        print("%s,%s,%s,%s,%s,"
               "%s,%s,%s,%s,"
               "%s,%s,%s,"
               "%s,%s,%s,%s,"
               "%s,%s,%s,"
               "%s,%s,%s,"
               "%s,%s,"
+              "%s,%s,"
+              "%s,%s,"
               "%s"
               %
               (row[0],row[1],row[2],row[3],
-               row[4],VolSizeGB,VolUsedGB,CloudUsedGB,
-               row[8],row[9],row[10],
-               row[11],row[12],SsResGB,SsUsedGB,
-               row[15],row[16],row[17],
-               row[18],row[19],row[20],
-               row[21],row[22],
+               row[4],VolSizeGB,VolDataSizeGB,VolUsedGB,CloudUsedGB,
+               row[9],row[10],row[11],
+               row[12],row[13],SsResGB,SsUsedGB,
+               row[16],row[17],row[18],
+               row[19],row[20],row[21],
+               row[22],row[23],
+               row[24],row[25],
+	       CompGB,DedupGB,
                lastupdated
               )
              )
